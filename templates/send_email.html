@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Send Email – Email Automation{% endblock %}
+{% block page_title %}Send Email{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-12 col-xl-8">
+        <div class="content-card">
+            <div class="card-header px-4 py-3">
+                <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-send me-2 text-primary"></i>Compose & Send</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+
+                    <!-- Mode selector -->
+                    <div class="mb-4">
+                        <label class="form-label text-white-50 small">Send To</label>
+                        <div class="d-flex gap-2">
+                            <div class="form-check flex-fill p-3 rounded"
+                                style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)">
+                                <input class="form-check-input" type="radio" name="mode" id="modeSingle" value="single"
+                                    checked onchange="toggleMode(this.value)">
+                                <label class="form-check-label text-white" for="modeSingle"><i
+                                        class="bi bi-person me-1"></i>Single Contact</label>
+                            </div>
+                            <div class="form-check flex-fill p-3 rounded"
+                                style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)">
+                                <input class="form-check-input" type="radio" name="mode" id="modeBulk" value="bulk"
+                                    onchange="toggleMode(this.value)">
+                                <label class="form-check-label text-white" for="modeBulk"><i
+                                        class="bi bi-people me-1"></i>All Contacts (Bulk)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Single contact -->
+                    <div id="singleContact" class="mb-3">
+                        <label class="form-label text-white-50 small">Select Contact</label>
+                        <select name="contact_id" class="form-select">
+                            <option value="">— Choose a contact —</option>
+                            {% for c in contacts %}
+                            <option value="{{ c.id }}">{{ c.name }} ({{ c.email }}) – {{ c.course }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Load Template -->
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small">Load Template (optional)</label>
+                        <select class="form-select" id="templateSelect" onchange="loadTemplate(this.value)">
+                            <option value="">— Select a template —</option>
+                            {% for t in templates %}
+                            <option value="{{ t.id }}">{{ t.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small">Subject</label>
+                        <input type="text" name="subject" id="subject" class="form-control"
+                            placeholder="e.g. Welcome to {course}!" required>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small">Email Body</label>
+                        <textarea name="body" id="body" class="form-control" rows="8"
+                            placeholder="Hello {name},&#10;&#10;Thank you for enrolling in {course}.&#10;&#10;Regards,&#10;Admin"
+                            required></textarea>
+                        <div class="mt-1">
+                            <code class="text-warning small me-3">{name}</code>
+                            <code class="text-warning small">{course}</code>
+                            <span class="text-white-50 small ms-2">— personalization variables</span>
+                        </div>
+                    </div>
+
+                    <!-- PDF Attachment -->
+                    <div class="mb-4">
+                        <label class="form-label text-white-50 small"><i class="bi bi-paperclip me-1"></i>Attach PDF
+                            (optional)</label>
+                        <input type="file" name="attachment" class="form-control" accept=".pdf">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary px-5 py-2 fw-semibold">
+                        <i class="bi bi-send me-2"></i>Send Email
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="col-12 col-xl-4">
+        <div class="content-card">
+            <div class="card-header px-4 py-3">
+                <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-info-circle me-2 text-info"></i>Tips</h6>
+            </div>
+            <div class="card-body p-4">
+                <ul class="text-white-50 small ps-3">
+                    <li class="mb-2">Use <code class="text-warning">{name}</code> and <code
+                            class="text-warning">{course}</code> for personalized emails</li>
+                    <li class="mb-2">Bulk send delivers one email per contact with their own data</li>
+                    <li class="mb-2">Attach a single PDF to all emails</li>
+                    <li class="mb-2">Ensure Gmail credentials are set in your <code class="text-info">.env</code> file
+                    </li>
+                    <li class="mb-2">Use Gmail App Password (not your regular password)</li>
+                </ul>
+                <hr style="border-color:rgba(255,255,255,.1)">
+                <p class="text-white-50 small mb-1 fw-semibold">Gmail SMTP Settings:</p>
+                <code class="text-info small">smtp.gmail.com:587 (TLS)</code>
+            </div>
+        </div>
+        <div class="content-card mt-3">
+            <div class="card-header px-4 py-3">
+                <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-people me-2 text-success"></i>Contacts ({{
+                    contacts | length }})</h6>
+            </div>
+            <div class="card-body p-3" style="max-height:220px;overflow-y:auto">
+                {% if contacts %}
+                {% for c in contacts %}
+                <div class="d-flex align-items-center gap-2 py-1" style="border-bottom:1px solid rgba(255,255,255,.05)">
+                    <span style="font-size:1.2rem">👤</span>
+                    <div>
+                        <div class="text-white small fw-semibold">{{ c.name }}</div>
+                        <div class="text-white-50" style="font-size:.72rem">{{ c.email }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-white-50 small text-center py-3">No contacts. <a href="{{ url_for('contacts') }}"
+                        class="text-info">Add contacts</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleMode(val) {
+        document.getElementById('singleContact').style.display = val === 'single' ? 'block' : 'none';
+    }
+
+    function loadTemplate(tid) {
+        if (!tid) return;
+        fetch(`/templates/get/${tid}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('subject').value = data.subject;
+                document.getElementById('body').value = data.body;
+            });
+    }
+</script>
+{% endblock %}

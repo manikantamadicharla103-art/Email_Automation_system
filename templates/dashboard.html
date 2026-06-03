@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Email Automation{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="stat-card text-center">
+            <div style="font-size:2rem;color:#4fc3f7">👥</div>
+            <div class="fs-2 fw-bold text-white mt-1">{{ total_contacts }}</div>
+            <div class="text-white-50 small">Total Contacts</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card text-center">
+            <div style="font-size:2rem;color:#81c784">✅</div>
+            <div class="fs-2 fw-bold text-success mt-1">{{ total_sent }}</div>
+            <div class="text-white-50 small">Emails Sent</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card text-center">
+            <div style="font-size:2rem;color:#e57373">❌</div>
+            <div class="fs-2 fw-bold text-danger mt-1">{{ total_failed }}</div>
+            <div class="text-white-50 small">Failed Emails</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="content-card">
+            <div class="card-header px-4 py-3">
+                <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-lightning me-2 text-warning"></i>Quick Actions
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('contacts') }}" class="btn btn-primary"><i class="bi bi-people me-2"></i>Manage
+                        Contacts</a>
+                    <a href="{{ url_for('send_email_page') }}" class="btn btn-success"><i
+                            class="bi bi-send me-2"></i>Send Email</a>
+                    <a href="{{ url_for('email_templates') }}" class="btn btn-info text-white"><i
+                            class="bi bi-file-text me-2"></i>Email Templates</a>
+                    <a href="{{ url_for('logs') }}" class="btn btn-secondary"><i
+                            class="bi bi-journal-text me-2"></i>View Logs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="content-card">
+    <div class="card-header px-4 py-3">
+        <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-clock-history me-2 text-info"></i>Recent Email Activity
+        </h6>
+    </div>
+    <div class="card-body p-0">
+        {% if recent_logs %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Recipient</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Sent At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>{{ log.recipient }}</td>
+                        <td class="text-truncate" style="max-width:200px">{{ log.subject }}</td>
+                        <td>
+                            <span
+                                class="badge {% if log.status=='sent' %}badge-sent{% else %}badge-failed{% endif %} rounded-pill px-3 py-1">
+                                {{ log.status | capitalize }}
+                            </span>
+                        </td>
+                        <td class="text-white-50 small">{{ log.sent_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-white-50">
+            <div style="font-size:3rem">📭</div>
+            <p class="mt-2">No emails sent yet. <a href="{{ url_for('send_email_page') }}" class="text-info">Send your
+                    first email!</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

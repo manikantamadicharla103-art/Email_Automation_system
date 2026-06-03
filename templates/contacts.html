@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Contacts – Email Automation{% endblock %}
+{% block page_title %}Contacts{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- Upload CSV -->
+    <div class="col-12 col-lg-4">
+        <div class="content-card h-100">
+            <div class="card-header px-4 py-3">
+                <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-upload me-2 text-success"></i>Import Contacts
+                    (CSV)</h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('upload_contacts') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label text-white-50 small">CSV File (Name, Email, Course)</label>
+                        <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-cloud-upload me-2"></i>Upload &
+                        Import</button>
+                </form>
+                <hr style="border-color:rgba(255,255,255,.1)">
+                <p class="text-white-50 small mb-1">Expected CSV format:</p>
+                <code class="text-info small">Name,Email,Course</code><br>
+                <a href="{{ url_for('static', filename='sample_contacts.csv') }}" class="text-info small" download>
+                    <i class="bi bi-download me-1"></i>Download Sample CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contacts Table -->
+    <div class="col-12 col-lg-8">
+        <div class="content-card">
+            <div class="card-header px-4 py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-people me-2 text-info"></i>All Contacts</h6>
+                <span class="badge bg-secondary rounded-pill">{{ contacts | length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if contacts %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Course</th>
+                                <th>Added</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in contacts %}
+                            <tr>
+                                <td class="text-white-50 small">{{ loop.index }}</td>
+                                <td class="fw-semibold text-white">{{ c.name }}</td>
+                                <td class="text-white-50">{{ c.email }}</td>
+                                <td><span class="badge bg-info text-dark rounded-pill">{{ c.course or '—' }}</span></td>
+                                <td class="text-white-50 small">{{ c.created_at.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_contact', cid=c.id) }}"
+                                        onsubmit="return confirm('Delete {{ c.name }}?')">
+                                        <button class="btn btn-sm btn-outline-danger"><i
+                                                class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-white-50">
+                    <div style="font-size:3rem">👤</div>
+                    <p class="mt-2">No contacts yet. Upload a CSV to get started.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

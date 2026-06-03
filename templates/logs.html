@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Email Logs – Email Automation{% endblock %}
+{% block page_title %}Email Logs{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="card-header px-4 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6 class="mb-0 text-white fw-semibold"><i class="bi bi-journal-text me-2 text-info"></i>Email Logs</h6>
+        <div class="d-flex gap-2">
+            <span class="badge badge-sent rounded-pill px-3 py-2">
+                ✅ Sent: {{ logs | selectattr('status','eq','sent') | list | length }}
+            </span>
+            <span class="badge badge-failed rounded-pill px-3 py-2">
+                ❌ Failed: {{ logs | selectattr('status','eq','failed') | list | length }}
+            </span>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if logs %}
+        <!-- Search -->
+        <div class="p-3" style="border-bottom:1px solid rgba(255,255,255,.06)">
+            <input type="text" id="searchInput" class="form-control" placeholder="🔍  Search by recipient or subject…"
+                oninput="filterLogs()">
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="logsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Recipient</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Error</th>
+                        <th>Sent At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="text-white-50 small">{{ loop.index }}</td>
+                        <td class="text-white">{{ log.recipient }}</td>
+                        <td class="text-white-50 text-truncate" style="max-width:200px" title="{{ log.subject }}">{{
+                            log.subject }}</td>
+                        <td>
+                            <span
+                                class="badge {% if log.status=='sent' %}badge-sent{% else %}badge-failed{% endif %} rounded-pill px-3 py-1">
+                                {% if log.status=='sent' %}✅ Sent{% else %}❌ Failed{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-danger small">{{ log.error_msg or '—' }}</td>
+                        <td class="text-white-50 small">{{ log.sent_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-white-50">
+            <div style="font-size:3rem">📭</div>
+            <p class="mt-2">No email logs yet. <a href="{{ url_for('send_email_page') }}" class="text-info">Send some
+                    emails!</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterLogs() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('#logsTable tbody tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}
